@@ -17,42 +17,79 @@ const WEATHER_CODES = {
   95: '⛈️', 96: '⛈️', 99: '⛈️'
 };
 
+// 带超时的 fetch
+function fetchWithTimeout(url, options = {}, timeout = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 async function fetchWeather() {
+  const CACHE_KEY = 'weather_cache';
+  const CACHE_TTL = 30 * 60 * 1000; // 30 分钟
+
+  // 1. 先尝试显示缓存数据
   try {
-    // 1. 获取坐标 (ip-api.com)
-    const ipRes = await fetch('https://ipapi.co/json/');
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY));
+    if (cached && Date.now() - cached.time < CACHE_TTL) {
+      weatherIcon.textContent = cached.icon;
+      weatherTemp.textContent = cached.temp;
+      weatherCity.textContent = cached.city;
+      return; // 缓存有效，直接用
+    }
+  } catch (e) { /* 缓存解析失败，继续请求 */ }
+
+  // 2. 请求新数据
+  try {
+    // 获取坐标（5秒超时）
+    const ipRes = await fetchWithTimeout('https://ipapi.co/json/', {}, 5000);
     const ipData = await ipRes.json();
     const lat = ipData.latitude;
     const lon = ipData.longitude;
 
-    // 2. 用坐标反查中文城市名 (Nominatim)
-    let city = '未知';
-    try {
-      const geoRes = await fetch(
+    // 反查中文城市 + 天气 并行请求（5秒超时）
+    const [geoRes, weatherRes] = await Promise.allSettled([
+      fetchWithTimeout(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh`,
-        { headers: { 'Accept-Language': 'zh-CN' } }
-      );
-      const geoData = await geoRes.json();
-      const addr = geoData.address || {};
-      city = addr.city || addr.town || addr.county || addr.state || addr.country || '未知';
-    } catch (e) { /* 反查失败用默认 */ }
+        { headers: { 'Accept-Language': 'zh-CN' } }, 5000
+      ),
+      fetchWithTimeout(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`,
+        {}, 5000
+      )
+    ]);
 
-    // 3. 获取天气 (Open-Meteo, 免费)
-    const weatherRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`
-    );
-    const weatherData = await weatherRes.json();
-    const temp = Math.round(weatherData.current.temperature_2m);
-    const code = weatherData.current.weather_code;
+    // 解析城市名
+    let city = '未知';
+    if (geoRes.status === 'fulfilled') {
+      try {
+        const geoData = await geoRes.value.json();
+        const addr = geoData.address || {};
+        city = addr.city || addr.town || addr.county || addr.state || '未知';
+      } catch (e) { /* 解析失败 */ }
+    }
 
-    weatherIcon.textContent = WEATHER_CODES[code] || '🌤️';
-    weatherTemp.textContent = `${temp}°`;
+    // 解析天气
+    let icon = '🌤️', temp = '--°';
+    if (weatherRes.status === 'fulfilled') {
+      try {
+        const weatherData = await weatherRes.value.json();
+        const code = weatherData.current.weather_code;
+        temp = Math.round(weatherData.current.temperature_2m) + '°';
+        icon = WEATHER_CODES[code] || '🌤️';
+      } catch (e) { /* 解析失败 */ }
+    }
+
+    // 更新显示
+    weatherIcon.textContent = icon;
+    weatherTemp.textContent = temp;
     weatherCity.textContent = city;
+
+    // 写入缓存
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ icon, temp, city, time: Date.now() }));
+    } catch (e) { /* localStorage 满 */ }
   } catch (e) {
-    // 如果API失败，显示默认状态
-    weatherIcon.textContent = '🌤️';
-    weatherTemp.textContent = '--°';
-    weatherCity.textContent = '天气';
     console.log('天气加载失败，使用默认显示');
   }
 }
@@ -401,11 +438,12 @@ function init() {
   // 渲染历史记录
   renderHistory();
 
-  // 加载天气
-  fetchWeather();
-
   // 设置悬浮搜索栏同步
   setupStickySearch();
+
+  // 天气延迟加载（不阻塞首屏渲染）
+  // 先用缓存立即显示，再后台更新
+  setTimeout(() => fetchWeather(), 100);
 
   // 计算搜索区域位置（用于悬浮搜索栏）
   updateSearchSectionPos();
