@@ -68,32 +68,6 @@ function handleScroll() {
 }
 
 window.addEventListener('scroll', handleScroll);
-
-// 搜索框同步 — 两个搜索框内容互相同步
-stickySearchInput.addEventListener('input', () => {
-  searchInput.value = stickySearchInput.value;
-  searchSites(stickySearchInput.value);
-});
-
-searchInput.addEventListener('input', () => {
-  stickySearchInput.value = searchInput.value;
-});
-
-// 悬浮搜索按钮点击 → 聚焦到主搜索框
-stickySearchBtn.addEventListener('click', () => {
-  searchInput.value = stickySearchInput.value;
-  searchSites(stickySearchInput.value);
-});
-
-// 悬浮搜索回车 → 聚焦到主搜索框
-stickySearchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    searchInput.value = stickySearchInput.value;
-    searchSites(stickySearchInput.value);
-  }
-});
-
-// 窗口大小变化时重新计算位置
 window.addEventListener('resize', () => {
   updateSearchSectionPos();
 });
@@ -377,6 +351,33 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ============ 悬浮搜索栏同步 ============
+function setupStickySearch() {
+  // 两个搜索框内容互相同步
+  stickySearchInput.addEventListener('input', () => {
+    searchInput.value = stickySearchInput.value;
+    searchSites(stickySearchInput.value);
+  });
+
+  searchInput.addEventListener('input', () => {
+    stickySearchInput.value = searchInput.value;
+  });
+
+  // 悬浮搜索按钮点击
+  stickySearchBtn.addEventListener('click', () => {
+    searchInput.value = stickySearchInput.value;
+    searchSites(stickySearchInput.value);
+  });
+
+  // 悬浮搜索回车
+  stickySearchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      searchInput.value = stickySearchInput.value;
+      searchSites(stickySearchInput.value);
+    }
+  });
+}
+
 // ============ 初始化 ============
 function init() {
   // 恢复主题
@@ -391,6 +392,9 @@ function init() {
 
   // 加载天气
   fetchWeather();
+
+  // 设置悬浮搜索栏同步
+  setupStickySearch();
 
   // 计算搜索区域位置（用于悬浮搜索栏）
   updateSearchSectionPos();
