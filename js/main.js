@@ -19,14 +19,25 @@ const WEATHER_CODES = {
 
 async function fetchWeather() {
   try {
-    // 1. 通过IP获取城市
+    // 1. 获取坐标 (ip-api.com)
     const ipRes = await fetch('https://ipapi.co/json/');
     const ipData = await ipRes.json();
-    const city = ipData.city || '未知';
     const lat = ipData.latitude;
     const lon = ipData.longitude;
 
-    // 2. 通过坐标获取天气 (Open-Meteo, 免费无需API Key)
+    // 2. 用坐标反查中文城市名 (Nominatim)
+    let city = '未知';
+    try {
+      const geoRes = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh`,
+        { headers: { 'Accept-Language': 'zh-CN' } }
+      );
+      const geoData = await geoRes.json();
+      const addr = geoData.address || {};
+      city = addr.city || addr.town || addr.county || addr.state || addr.country || '未知';
+    } catch (e) { /* 反查失败用默认 */ }
+
+    // 3. 获取天气 (Open-Meteo, 免费)
     const weatherRes = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`
     );
