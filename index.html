@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="开元导航站 - ACG二次元资源聚合导航，收录动漫、漫画、游戏、轻小说、音乐、壁纸等优质网站">
+  <meta name="keywords" content="ACG导航,二次元导航,动漫导航,漫画导航,游戏导航,开元导航站">
+  <title>开元导航站 - ACG二次元资源导航</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ========== 头部区域 ========== -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="/" class="logo">
+          <span class="logo-icon">🍃</span>
+          <span class="logo-text">开元导航站</span>
+        </a>
+        <p class="header-desc">ACG二次元资源聚合导航 · 发现美好</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== 搜索区域 ========== -->
+  <section class="search-section">
+    <div class="container">
+      <div class="search-box">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="搜索你想要的 ACG 网站..."
+          autocomplete="off"
+        >
+        <button id="searchBtn" class="search-btn">🔍 搜索</button>
+      </div>
+      <div id="searchResults" class="search-results" style="display:none;">
+        <div class="search-results-header">
+          <span id="searchResultCount"></span>
+          <button id="clearSearch" class="clear-search-btn">✕ 清除</button>
+        </div>
+        <div id="searchResultList" class="search-result-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 公告栏 ========== -->
+  <section class="notice-section">
+    <div class="container">
+      <div class="notice-bar">
+        <span class="notice-icon">📢</span>
+        <div class="notice-scroll">
+          <span class="notice-text">
+            欢迎来到开元导航站！本站收录了 100+ ACG 优质网站，涵盖动漫、漫画、游戏、轻小说等分类，持续更新中~
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 分类导航主体 ========== -->
+  <main class="main">
+    <div class="container">
+      <div id="categoryGrid" class="category-grid">
+        <!-- 由 JS 动态生成 -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ========== 分类详情弹窗 ========== -->
+  <div id="categoryModal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle" class="modal-title"></h2>
+        <button id="modalClose" class="modal-close">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body">
+        <!-- 由 JS 动态生成 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 页脚 ========== -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-text">© 2025 开元导航站 · 为 ACG 爱好者而生</p>
+      <p class="footer-sub">
+        <span>本站仅收录网络公开站点链接，版权归原作者所有</span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- ========== 脚本 ========== -->
+  <script src="data/sites.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
