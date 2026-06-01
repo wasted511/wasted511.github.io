@@ -2,6 +2,102 @@
    Y的acg导航站 - 交互逻辑
    ========================================== */
 
+// ============ 天气组件 ============
+const weatherIcon = document.querySelector('.weather-icon');
+const weatherTemp = document.querySelector('.weather-temp');
+const weatherCity = document.querySelector('.weather-city');
+
+const WEATHER_CODES = {
+  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+  45: '🌫️', 48: '🌫️',
+  51: '🌦️', 53: '🌦️', 55: '🌦️',
+  61: '🌧️', 63: '🌧️', 65: '🌧️',
+  71: '🌨️', 73: '🌨️', 75: '🌨️',
+  80: '🌦️', 81: '🌦️', 82: '🌧️',
+  95: '⛈️', 96: '⛈️', 99: '⛈️'
+};
+
+async function fetchWeather() {
+  try {
+    // 1. 通过IP获取城市
+    const ipRes = await fetch('https://ipapi.co/json/');
+    const ipData = await ipRes.json();
+    const city = ipData.city || '未知';
+    const lat = ipData.latitude;
+    const lon = ipData.longitude;
+
+    // 2. 通过坐标获取天气 (Open-Meteo, 免费无需API Key)
+    const weatherRes = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`
+    );
+    const weatherData = await weatherRes.json();
+    const temp = Math.round(weatherData.current.temperature_2m);
+    const code = weatherData.current.weather_code;
+
+    weatherIcon.textContent = WEATHER_CODES[code] || '🌤️';
+    weatherTemp.textContent = `${temp}°`;
+    weatherCity.textContent = city;
+  } catch (e) {
+    // 如果API失败，显示默认状态
+    weatherIcon.textContent = '🌤️';
+    weatherTemp.textContent = '--°';
+    weatherCity.textContent = '天气';
+    console.log('天气加载失败，使用默认显示');
+  }
+}
+
+// ============ 悬浮搜索栏 ============
+const stickySearch = document.getElementById('stickySearch');
+const stickySearchInput = document.getElementById('stickySearchInput');
+const stickySearchBtn = document.getElementById('stickySearchBtn');
+const mainSearchSection = document.querySelector('.search-section');
+
+// 滚动监听
+let searchSectionBottom = 0;
+
+function updateSearchSectionPos() {
+  searchSectionBottom = mainSearchSection.getBoundingClientRect().bottom + window.scrollY;
+}
+
+function handleScroll() {
+  if (window.scrollY > searchSectionBottom + 40) {
+    stickySearch.classList.add('visible');
+  } else {
+    stickySearch.classList.remove('visible');
+  }
+}
+
+window.addEventListener('scroll', handleScroll);
+
+// 搜索框同步 — 两个搜索框内容互相同步
+stickySearchInput.addEventListener('input', () => {
+  searchInput.value = stickySearchInput.value;
+  searchSites(stickySearchInput.value);
+});
+
+searchInput.addEventListener('input', () => {
+  stickySearchInput.value = searchInput.value;
+});
+
+// 悬浮搜索按钮点击 → 聚焦到主搜索框
+stickySearchBtn.addEventListener('click', () => {
+  searchInput.value = stickySearchInput.value;
+  searchSites(stickySearchInput.value);
+});
+
+// 悬浮搜索回车 → 聚焦到主搜索框
+stickySearchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    searchInput.value = stickySearchInput.value;
+    searchSites(stickySearchInput.value);
+  }
+});
+
+// 窗口大小变化时重新计算位置
+window.addEventListener('resize', () => {
+  updateSearchSectionPos();
+});
+
 // ============ DOM 元素 ============
 const categoryGrid = document.getElementById('categoryGrid');
 const searchInput = document.getElementById('searchInput');
@@ -292,6 +388,12 @@ function init() {
 
   // 渲染历史记录
   renderHistory();
+
+  // 加载天气
+  fetchWeather();
+
+  // 计算搜索区域位置（用于悬浮搜索栏）
+  updateSearchSectionPos();
 
   console.log('🍃 Y的acg导航站已就绪！');
   console.log(`   收录 ${siteData.length} 个分类，共 ${siteData.reduce((sum, c) => sum + c.sites.length, 0)} 个站点`);

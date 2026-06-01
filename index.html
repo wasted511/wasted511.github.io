@@ -18,10 +18,34 @@
           <span class="logo-icon">🍃</span>
           <span class="logo-text">Y的acg导航站</span>
         </a>
+        <div id="weatherWidget" class="weather-widget">
+          <span class="weather-icon">☀️</span>
+          <span class="weather-temp">--°</span>
+          <span class="weather-city">加载中...</span>
+        </div>
         <p class="header-desc">ACG二次元资源聚合导航 · 发现美好</p>
       </div>
     </div>
   </header>
+
+  <!-- ========== 悬浮搜索栏（滚动时出现）========== -->
+  <div id="stickySearch" class="sticky-search">
+    <div class="container">
+      <div class="sticky-search-inner">
+        <span class="sticky-logo">🍃 Y的acg</span>
+        <div class="search-box sticky-search-box">
+          <input
+            type="text"
+            id="stickySearchInput"
+            class="search-input"
+            placeholder="搜索 ACG 网站..."
+            autocomplete="off"
+          >
+          <button id="stickySearchBtn" class="search-btn">🔍</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ========== 搜索区域 ========== -->
   <section class="search-section">

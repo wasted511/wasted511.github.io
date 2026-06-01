@@ -229,6 +229,100 @@ ul { list-style:none; }
   letter-spacing: 4px;
 }
 
+/* 天气组件 */
+.weather-widget {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
+  transition: background .25s var(--ease-out);
+}
+
+.weather-widget:hover {
+  background: rgba(255,255,255,.35);
+}
+
+.weather-icon { font-size: 18px; }
+.weather-temp { font-weight: 700; min-width: 32px; text-align: center; }
+.weather-city { font-size: 12px; opacity: .8; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- 悬浮搜索栏 ---------- */
+.sticky-search {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 999;
+  background: var(--bg-card);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--shadow-md);
+  padding: 10px 0;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .35s var(--ease-out), opacity .3s var(--ease-out);
+}
+
+.sticky-search.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sticky-search-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.sticky-logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sticky-search-box {
+  flex: 1;
+  max-width: 500px;
+  margin: 0;
+}
+
+.sticky-search-box .search-input {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.sticky-search-box .search-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* 手机端悬浮栏适配 */
+@media (max-width: 560px) {
+  .weather-widget {
+    position: static;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .header-inner { display: flex; flex-direction: column; align-items: center; }
+
+  .sticky-logo { display: none; }
+  .sticky-search-inner { gap: 0; }
+  .sticky-search-box { max-width: 100%; }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   25% { transform: translateY(-6px) rotate(2deg); }
