@@ -1,5 +1,5 @@
 /* ==========================================
-   开元导航站 - 交互逻辑
+   Y的acg导航站 - 交互逻辑
    ========================================== */
 
 // ============ DOM 元素 ============
@@ -155,7 +155,7 @@ document.addEventListener('click', (e) => {
 // ============ 初始化 ============
 function init() {
   renderCategories();
-  console.log('🍃 开元导航站已就绪！');
+  console.log('🍃 Y的acg导航站已就绪！');
   console.log(`   收录 ${siteData.length} 个分类，共 ${siteData.reduce((sum, c) => sum + c.sites.length, 0)} 个站点`);
 }
 
