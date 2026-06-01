@@ -31,6 +31,120 @@
            "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
 }
 
+/* ===== 主题配色 ===== */
+/* 🍃 薄荷绿 - 默认 */
+body[data-theme="green"] {
+  --primary: #7EC8A6;
+  --primary-light: #B5E4CD;
+  --primary-dark: #5DAF8A;
+  --accent: #87CEEB;
+  --accent-light: #C5E8F7;
+  --pink: #FFB7C5;
+  --pink-light: #FFD4DC;
+  --bg: #FBF8F4;
+  --bg-card: #FFFFFF;
+  --bg-warm: #F5FAF7;
+}
+
+/* 🌸 樱花粉 */
+body[data-theme="pink"] {
+  --primary: #F0A8B8;
+  --primary-light: #FAD0D8;
+  --primary-dark: #D88898;
+  --accent: #C8A8E0;
+  --accent-light: #E0D0F0;
+  --pink: #FFB7C5;
+  --pink-light: #FFD4DC;
+  --bg: #FFF5F5;
+  --bg-card: #FFFFFF;
+  --bg-warm: #FFF0F3;
+}
+
+/* 💙 天空蓝 */
+body[data-theme="blue"] {
+  --primary: #6EB5D8;
+  --primary-light: #B0DAF0;
+  --primary-dark: #4A8FB8;
+  --accent: #98D8C8;
+  --accent-light: #C8F0E8;
+  --pink: #FFB7C5;
+  --pink-light: #FFD4DC;
+  --bg: #F5F8FB;
+  --bg-card: #FFFFFF;
+  --bg-warm: #F0F5FA;
+}
+
+/* 🌙 暗夜模式 */
+body[data-theme="dark"] {
+  --primary: #7EC8A6;
+  --primary-light: #3A6B5A;
+  --primary-dark: #5DAF8A;
+  --accent: #6E9AC8;
+  --accent-light: #2E4A68;
+  --pink: #C87888;
+  --pink-light: #4A2830;
+  --bg: #1A1D20;
+  --bg-card: #242830;
+  --bg-warm: #2A2E35;
+  --text: #D0D0D0;
+  --text-secondary: #999;
+  --text-light: #777;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.40);
+}
+
+/* 暗夜模式额外覆盖 */
+body[data-theme="dark"] .header {
+  background: linear-gradient(135deg, #2A3E35, #2E3E50, #3E2E35);
+}
+body[data-theme="dark"] .footer {
+  border-top-color: #333;
+}
+body[data-theme="dark"] .modal-header {
+  border-bottom-color: #333;
+}
+body[data-theme="dark"] .search-results-header {
+  border-bottom-color: #333;
+}
+body[data-theme="dark"] .search-result-item .site-category {
+  background: #3A3A3A;
+}
+body[data-theme="dark"] .card-tag {
+  background: #333;
+  color: #7EC8A6;
+}
+body[data-theme="dark"] .site-item {
+  background: #2A2E35;
+}
+body[data-theme="dark"] .site-item:hover {
+  background: #3A3E45;
+}
+body[data-theme="dark"] .search-result-item:hover {
+  background: #2A2E35;
+}
+body[data-theme="dark"] .modal-close {
+  background: #3A3A3A;
+  color: #ccc;
+}
+body[data-theme="dark"] .modal-close:hover {
+  background: #4A2020;
+}
+body[data-theme="dark"] .clear-search-btn {
+  border-color: #444;
+  color: #999;
+}
+body[data-theme="dark"] .clear-search-btn:hover {
+  border-color: #C87888;
+  color: #e88;
+  background: #302020;
+}
+body[data-theme="dark"] .header-desc,
+body[data-theme="dark"] .logo-text,
+body[data-theme="dark"] .search-btn { color: #fff; }
+body[data-theme="dark"] .search-btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+}
+
 /* ---------- 全局重置 ---------- */
 *,
 *::before,
@@ -530,6 +644,177 @@ ul {
 
 .site-item:hover .s-arrow {
   opacity: 1;
+}
+
+/* ---------- 主题切换按钮 ---------- */
+.theme-switcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.theme-toggle-btn {
+  width: 46px;
+  height: 46px;
+  border: none;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-hover);
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.3s, background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+.theme-palette {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-hover);
+  border-radius: 28px;
+  padding: 8px;
+}
+
+.theme-palette.show {
+  display: flex;
+}
+
+.theme-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.theme-dot:hover {
+  transform: scale(1.15);
+}
+
+.theme-dot.active {
+  border-color: var(--text);
+}
+
+.theme-dot.green  { background: linear-gradient(135deg, #7EC8A6, #B5E4CD); }
+.theme-dot.pink   { background: linear-gradient(135deg, #F0A8B8, #FAD0D8); }
+.theme-dot.blue   { background: linear-gradient(135deg, #6EB5D8, #B0DAF0); }
+.theme-dot.dark   { background: linear-gradient(135deg, #2A2E35, #4A4E55); }
+
+/* ---------- 历史浏览 ---------- */
+.history-section {
+  padding: 0 0 20px;
+}
+
+.history-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--pink);
+  flex-wrap: wrap;
+}
+
+.history-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+}
+
+.history-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 10px;
+  background: var(--bg-warm);
+  border-radius: 12px;
+  color: var(--primary-dark);
+  transition: all 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.history-item:hover {
+  background: var(--pink-light);
+  color: #d88;
+}
+
+.history-clear {
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  padding: 2px 8px;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.history-clear:hover {
+  color: #e55;
+  background: #fff0f0;
+}
+
+.history-empty {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* ---------- 回到顶部 ---------- */
+.back-to-top {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 900;
+  width: 46px;
+  height: 46px;
+  border: none;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-hover);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  transform: scale(1.1);
 }
 
 /* ---------- 页脚 ---------- */
