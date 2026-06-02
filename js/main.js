@@ -300,15 +300,15 @@ const ANIME_QUOTES = [
 
 const quoteText = document.querySelector('#headerQuote .quote-text');
 const quoteSource = document.querySelector('#headerQuote .quote-source');
-let quoteIndex = 0;
+let quoteIndex = Math.floor(Math.random() * ANIME_QUOTES.length);
 let quoteTimer = null;
 
-function showQuote(index) {
+function showQuote() {
   if (!quoteText || !quoteSource) return;
   quoteText.classList.add('fading');
   quoteSource.classList.add('fading');
   setTimeout(() => {
-    const q = ANIME_QUOTES[index];
+    const q = ANIME_QUOTES[quoteIndex];
     quoteText.textContent = q.text;
     quoteSource.textContent = q.source;
     quoteText.classList.remove('fading');
@@ -316,12 +316,20 @@ function showQuote(index) {
   }, 400);
 }
 
+// Random next, never same as current
+function nextQuote() {
+  let next;
+  do { next = Math.floor(Math.random() * ANIME_QUOTES.length); }
+  while (next === quoteIndex && ANIME_QUOTES.length > 1);
+  quoteIndex = next;
+}
+
 function startQuoteRotation() {
   if (!quoteText || !quoteSource) return;
-  showQuote(0);
+  showQuote();
   quoteTimer = setInterval(() => {
-    quoteIndex = (quoteIndex + 1) % ANIME_QUOTES.length;
-    showQuote(quoteIndex);
+    nextQuote();
+    showQuote();
   }, 6000);
 }
 
