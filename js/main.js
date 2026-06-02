@@ -107,15 +107,39 @@ function updateSearchSectionPos() {
   searchSectionBottom = mainSearchSection.getBoundingClientRect().bottom + window.scrollY;
 }
 
+// === Nav bar scroll effect ===
+const navBar = document.getElementById('navBar');
+const headerSection = document.querySelector('.header');
+
+function handleNavBarScroll() {
+  const headerBottom = headerSection.getBoundingClientRect().bottom;
+  if (headerBottom < 20) {
+    navBar.classList.add('scrolled');
+  } else {
+    navBar.classList.remove('scrolled');
+  }
+}
+
+// === Consolidated scroll handler ===
 function handleScroll() {
+  // Sticky search
   if (window.scrollY > searchSectionBottom + 40) {
     stickySearch.classList.add('visible');
   } else {
     stickySearch.classList.remove('visible');
   }
+  // Back to top
+  if (window.scrollY > 400) {
+    backToTopBtn.classList.add('visible');
+  } else {
+    backToTopBtn.classList.remove('visible');
+  }
 }
 
-window.addEventListener('scroll', handleScroll);
+window.addEventListener('scroll', () => {
+  handleScroll();
+  handleNavBarScroll();
+});
 window.addEventListener('resize', () => {
   updateSearchSectionPos();
 });
@@ -138,10 +162,7 @@ const modalOverlay = modal.querySelector('.modal-overlay');
 const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistory');
 
-// 主题切换
-const themeToggle = document.getElementById('themeToggle');
-const themePalette = document.getElementById('themePalette');
-const themeDots = document.querySelectorAll('.theme-dot');
+// 回到顶部
 const backToTopBtn = document.getElementById('backToTop');
 
 // ============ 历史浏览 ============
@@ -191,9 +212,10 @@ function clearHistory() {
 
 clearHistoryBtn.addEventListener('click', clearHistory);
 
-// ============ 主题切换 ============
+// ============ 主题切换 — iOS Segmented Control ============
 const THEME_KEY = 'site_theme';
-const THEMES = ['green', 'pink', 'blue', 'dark'];
+const THEMES = ['green', 'pink', 'blue', 'mono', 'dark'];
+const themeSegments = document.querySelectorAll('.theme-segment');
 
 function getTheme() {
   return localStorage.getItem(THEME_KEY) || 'green';
@@ -202,43 +224,49 @@ function getTheme() {
 function setTheme(theme) {
   document.body.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
-  // 更新选中状态
-  themeDots.forEach(dot => {
-    dot.classList.toggle('active', dot.dataset.theme === theme);
+  themeSegments.forEach(seg => {
+    seg.classList.toggle('active', seg.dataset.theme === theme);
   });
 }
 
-// 主题色点点击
-themeDots.forEach(dot => {
-  dot.addEventListener('click', (e) => {
+themeSegments.forEach(segment => {
+  segment.addEventListener('click', (e) => {
     e.stopPropagation();
-    setTheme(dot.dataset.theme);
-    themePalette.classList.remove('show');
+    setTheme(segment.dataset.theme);
   });
 });
-
-// 主题按钮点击 - 展开/收起调色板
-themeToggle.addEventListener('click', (e) => {
-  e.stopPropagation();
-  themePalette.classList.toggle('show');
-});
-
-// 点击外部关闭调色板
-document.addEventListener('click', () => {
-  themePalette.classList.remove('show');
-});
-
-// ============ 回到顶部 ============
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 400) {
-    backToTopBtn.classList.add('visible');
-  } else {
-    backToTopBtn.classList.remove('visible');
-  }
-});
-
 backToTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ============ Swipe-to-Dismiss for Modal ============
+const modalContent = modal.querySelector('.modal-content');
+let touchStartY = 0;
+let touchCurrentY = 0;
+let isSwiping = false;
+
+modalContent.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+  isSwiping = true;
+}, { passive: true });
+
+modalContent.addEventListener('touchmove', (e) => {
+  if (!isSwiping) return;
+  touchCurrentY = e.touches[0].clientY;
+  const delta = Math.max(0, touchCurrentY - touchStartY);
+  modalContent.style.transform = 'translateY(' + delta + 'px)';
+  modalContent.style.transition = 'none';
+});
+
+modalContent.addEventListener('touchend', () => {
+  if (!isSwiping) return;
+  isSwiping = false;
+  const delta = touchCurrentY - touchStartY;
+  modalContent.style.transition = '';
+  modalContent.style.transform = '';
+  if (delta > 80) {
+    closeModal();
+  }
 });
 
 // ============ 渲染分类卡片 ============
@@ -297,13 +325,13 @@ function openCategory(catId) {
     });
   });
 
-  modal.style.display = 'flex';
+  modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
 // ============ 关闭弹窗 ============
 function closeModal() {
-  modal.style.display = 'none';
+  modal.classList.remove('active');
   document.body.style.overflow = '';
 }
 
@@ -313,7 +341,7 @@ modalOverlay.addEventListener('click', closeModal);
 // ESC 关闭弹窗
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    if (modal.style.display === 'flex') {
+    if (modal.classList.contains('active')) {
       closeModal();
     }
   }
@@ -447,6 +475,7 @@ function init() {
 
   // 计算搜索区域位置（用于悬浮搜索栏）
   updateSearchSectionPos();
+  handleNavBarScroll();
 
   console.log('🍃 Y的acg导航站已就绪！');
   console.log(`   收录 ${siteData.length} 个分类，共 ${siteData.reduce((sum, c) => sum + c.sites.length, 0)} 个站点`);
