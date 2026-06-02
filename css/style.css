@@ -136,8 +136,8 @@ body[data-theme="blue"] {
 
 /* ===== Theme: Dark ===== */
 body[data-theme="dark"] {
-  --accent: #0A84FF; --accent-light: #409CFF;
-  --accent-dark: #0055CC; --accent-dim: #0A84FF26;
+  --accent: #FFFFFF; --accent-light: #E5E5EA;
+  --accent-dark: #C7C7CC; --accent-dim: #FFFFFF1A;
 
   --bg-base: #000000;
   --bg-elevated: #1C1C1E;
@@ -360,6 +360,60 @@ body[data-theme="dark"] .header-glass {
   z-index: 1;
 }
 
+/* Header layout: title left, quote right */
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+}
+
+.header-inner { flex: 1; }
+
+/* Quote block — subtle, integrated */
+.header-quote {
+  flex-shrink: 0;
+  max-width: 320px;
+  text-align: right;
+  position: relative;
+  z-index: 1;
+}
+
+.quote-text {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  line-height: 1.7;
+  letter-spacing: -0.2px;
+  transition: opacity 0.5s var(--spring-smooth);
+}
+
+.quote-source {
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.3px;
+}
+
+.quote-text.fading,
+.quote-source.fading {
+  opacity: 0;
+}
+
+/* Mobile: stack vertically */
+@media (max-width: 700px) {
+  .header .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  .header-quote {
+    max-width: 100%;
+    text-align: left;
+  }
+}
+
 .logo {
   display: flex;
   align-items: baseline;
@@ -493,9 +547,9 @@ body[data-theme="dark"] .header-glass {
 
 /* === Floating Search Bar (scroll-triggered) === */
 .sticky-search {
-  position: fixed; top: 20px; left: 50%;
-  transform: translateX(-50%) translateY(-160%);
-  z-index: 999;
+  position: fixed; top: 60px; left: 50%;
+  transform: translateX(-50%) translateY(-180%);
+  z-index: 997;
   max-width: 600px; width: calc(100% - 48px);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -642,7 +696,7 @@ body[data-theme="dark"] .header-glass {
 
 .history-bar::before {
   content: ""; width: 8px; height: 8px;
-  background: #FF375F; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent); border-radius: 50%; flex-shrink: 0;
 }
 
 .history-label {
@@ -672,7 +726,7 @@ body[data-theme="dark"] .header-glass {
   transition: color 0.2s var(--spring-interactive),
               background 0.2s var(--spring-interactive);
 }
-.history-clear:hover { color: #FF375F; background: rgba(255, 55, 95, 0.08); }
+.history-clear:hover { color: var(--accent); background: var(--accent-dim); }
 
 .history-empty { font-size: var(--text-xs); color: var(--text-tertiary); }
 
@@ -721,16 +775,13 @@ body[data-theme="dark"] .header-glass {
   opacity: 0.8;
 }
 
-.category-card:nth-child(7n+1)::before { background: #007AFF; }
-.category-card:nth-child(7n+2)::before { background: #FF9500; }
-.category-card:nth-child(7n+3)::before { background: #FF375F; }
-.category-card:nth-child(7n+4)::before { background: #AF52DE; }
-.category-card:nth-child(7n+5)::before { background: #5856D6; }
-.category-card:nth-child(7n+6)::before { background: #34C759; }
-.category-card:nth-child(7n+7)::before { background: #FF2D55; }
-
-/* In mono theme, accent bars are grayscale */
-body[data-theme="mono"] .category-card::before { background: var(--text-primary) !important; opacity: 0.60; }
+.category-card:nth-child(7n+1)::before,
+.category-card:nth-child(7n+2)::before,
+.category-card:nth-child(7n+3)::before,
+.category-card:nth-child(7n+4)::before,
+.category-card:nth-child(7n+5)::before,
+.category-card:nth-child(7n+6)::before,
+.category-card:nth-child(7n+7)::before { background: var(--accent); }
 
 .category-card::after { display: none; }
 

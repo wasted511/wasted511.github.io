@@ -216,6 +216,15 @@ clearHistoryBtn.addEventListener('click', clearHistory);
 const THEME_KEY = 'site_theme';
 const THEMES = ['green', 'pink', 'blue', 'mono', 'dark'];
 const themeSegments = document.querySelectorAll('.theme-segment');
+const logoIcon = document.getElementById('logoIcon');
+
+const THEME_LOGOS = {
+  green: '🍃',
+  pink: '🌸',
+  blue: '☁️',
+  mono: '🗡️',
+  dark: '🌙',
+};
 
 function getTheme() {
   return localStorage.getItem(THEME_KEY) || 'green';
@@ -227,6 +236,12 @@ function setTheme(theme) {
   themeSegments.forEach(seg => {
     seg.classList.toggle('active', seg.dataset.theme === theme);
   });
+  // Update logo icon
+  const icon = THEME_LOGOS[theme] || '🍃';
+  if (logoIcon) {
+    logoIcon.textContent = icon;
+    logoIcon.style.display = icon ? '' : 'none';
+  }
 }
 
 themeSegments.forEach(segment => {
@@ -238,6 +253,51 @@ themeSegments.forEach(segment => {
 backToTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+// ============ Header Quote Rotation ============
+const ANIME_QUOTES = [
+  { text: '如果是去见你，那我一定是用跑的。', source: '——《萤火之森》' },
+  { text: '能哭的地方，只有厕所和爸爸的怀里。', source: '——《CLANNAD》' },
+  { text: '我不管几次，都会站在你身边。', source: '——《命运石之门》' },
+  { text: '人没有牺牲的话就什么都得不到。', source: '——《钢之炼金术师》' },
+  { text: '能原谅自己的，只有自己。', source: '——《魔法少女小圆》' },
+  { text: '错的不是我，是这个世界。', source: '——《东京喰种》' },
+  { text: '我想要的，只是守护重要的东西。', source: '——《火影忍者》' },
+  { text: '正因为我们看不见，所以才有了可能性。', source: '——《黑执事》' },
+  { text: '活着本来就不是一件容易的事。', source: '——《银魂》' },
+  { text: '无论多少次，我都会选择你。', source: '——《你的名字。》' },
+  { text: '人生就是不停的战斗。', source: '——《海贼王》' },
+  { text: '没有未来的未来，不是我想要的未来。', source: '——《境界的彼方》' },
+];
+
+const quoteText = document.querySelector('#headerQuote .quote-text');
+const quoteSource = document.querySelector('#headerQuote .quote-source');
+let quoteIndex = 0;
+let quoteTimer = null;
+
+function showQuote(index) {
+  if (!quoteText || !quoteSource) return;
+  quoteText.classList.add('fading');
+  quoteSource.classList.add('fading');
+  setTimeout(() => {
+    const q = ANIME_QUOTES[index];
+    quoteText.textContent = q.text;
+    quoteSource.textContent = q.source;
+    quoteText.classList.remove('fading');
+    quoteSource.classList.remove('fading');
+  }, 400);
+}
+
+function startQuoteRotation() {
+  if (!quoteText || !quoteSource) return;
+  showQuote(0);
+  quoteTimer = setInterval(() => {
+    quoteIndex = (quoteIndex + 1) % ANIME_QUOTES.length;
+    showQuote(quoteIndex);
+  }, 6000);
+}
+
+// Call in init()
 
 // ============ Swipe-to-Dismiss for Modal ============
 const modalContent = modal.querySelector('.modal-content');
@@ -476,6 +536,9 @@ function init() {
   // 计算搜索区域位置（用于悬浮搜索栏）
   updateSearchSectionPos();
   handleNavBarScroll();
+
+  // 启动名言轮播
+  startQuoteRotation();
 
   console.log('🍃 Y的acg导航站已就绪！');
   console.log(`   收录 ${siteData.length} 个分类，共 ${siteData.reduce((sum, c) => sum + c.sites.length, 0)} 个站点`);
