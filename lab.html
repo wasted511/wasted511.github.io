@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>神秘实验室 — Y的acg导航站</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="css/style.css?v=5">
+  <style>
+    .lab-page {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--spacing-3xl) var(--spacing-lg);
+    }
+    .lab-icon { font-size: 64px; margin-bottom: var(--spacing-lg); }
+    .lab-title { font-size: var(--text-4xl); font-weight: var(--weight-heavy); color: var(--text-primary); letter-spacing: -0.5px; margin-bottom: var(--spacing-sm); }
+    .lab-sub { font-size: var(--text-lg); color: var(--text-secondary); margin-bottom: var(--spacing-xl); }
+    .lab-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: var(--text-md); font-weight: var(--weight-medium);
+      color: var(--accent); padding: 10px 24px;
+      border-radius: var(--radius-full);
+      border: 0.5px solid var(--accent);
+      transition: all 0.2s var(--spring-interactive);
+      cursor: pointer; text-decoration: none;
+    }
+    .lab-back:hover { background: var(--accent); color: var(--text-inverse); }
+  </style>
+</head>
+<body>
+  <nav class="nav-bar scrolled" id="navBar">
+    <div class="container">
+      <div class="nav-bar-inner">
+        <span class="nav-title" style="opacity:1">神秘实验室</span>
+        <a href="index.html" class="nav-lab">← 返回导航</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="lab-page">
+    <div class="lab-icon">🧪</div>
+    <h1 class="lab-title">神秘实验室</h1>
+    <p class="lab-sub">新项目孵化中，敬请期待…</p>
+    <a href="index.html" class="lab-back">← 返回导航站</a>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-text">© 2025 Y的acg导航站 · 神秘实验室</p>
+      <p class="footer-sub"><span>为 ACG 爱好者而生</span></p>
+    </div>
+  </footer>
+</body>
+</html>

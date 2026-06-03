@@ -289,6 +289,34 @@ a, button { -webkit-tap-highlight-color: transparent; }
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.nav-lab {
+  position: absolute;
+  right: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  transition: color 0.25s var(--spring-interactive);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-lab .lab-arrow {
+  display: inline-block;
+  transition: transform 0.35s var(--spring-bouncy);
+  font-size: 14px;
+}
+
+.nav-lab:hover {
+  color: var(--accent);
+}
+
+.nav-lab:hover .lab-arrow {
+  transform: translate(3px, -3px);
 }
 
 .nav-bar .nav-title {
