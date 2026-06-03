@@ -1,0 +1,375 @@
+/* ==========================================
+   神秘实验室 — Anime Archive Terminal
+   极简 · 中央光柱 · 档案调取
+   ========================================== */
+
+:root {
+  --abyss: #08080C;
+  --pillar: rgba(180, 200, 240, 0.40);
+  --pillar-bright: rgba(200, 215, 250, 0.65);
+  --surface: rgba(18, 18, 26, 0.70);
+  --surface-hover: rgba(24, 24, 34, 0.85);
+  --border: rgba(255, 255, 255, 0.05);
+  --text: #E8E8F0;
+  --text-dim: rgba(255, 255, 255, 0.38);
+  --text-faint: rgba(255, 255, 255, 0.18);
+}
+
+/* ===== Base ===== */
+.lab-body {
+  background: var(--abyss);
+  color: var(--text);
+  font-family: var(--font);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ===== Central Pillar ===== */
+.pillar-bg {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* The subtle glow */
+.pillar-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    var(--pillar) 8%,
+    var(--pillar-bright) 40%,
+    var(--pillar-bright) 60%,
+    var(--pillar) 92%,
+    transparent 100%);
+  box-shadow:
+    0 0 6px rgba(180, 200, 240, 0.12),
+    0 0 20px rgba(180, 200, 240, 0.04);
+}
+
+/* Wider ambient halo */
+.pillar-bg::after {
+  content: '';
+  position: absolute;
+  top: 5%; bottom: 5%;
+  left: -120px;
+  width: 240px;
+  background: radial-gradient(ellipse at center,
+    rgba(180, 200, 240, 0.015) 0%,
+    transparent 70%);
+}
+
+/* Flowing particles inside pillar */
+.pillar-particles {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pillar-particle {
+  position: absolute;
+  width: 1px;
+  height: 6px;
+  left: 1.5px;
+  background: rgba(200, 215, 250, 0.5);
+  border-radius: 1px;
+  animation: flowUp var(--dur) linear infinite;
+  animation-delay: var(--delay);
+  opacity: 0;
+}
+
+@keyframes flowUp {
+  0% { top: 105%; opacity: 0; }
+  10% { opacity: 0.6; }
+  80% { opacity: 0.3; }
+  100% { top: -5%; opacity: 0; }
+}
+
+/* ===== Startup overlay ===== */
+.startup-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--abyss);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease;
+  pointer-events: all;
+}
+.startup-overlay.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.startup-dot {
+  width: 4px; height: 4px;
+  background: rgba(200, 220, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(200, 220, 255, 0.5);
+}
+
+/* ===== Nav Bar ===== */
+.lab-body .nav-bar {
+  background: rgba(8, 8, 12, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.lab-body .nav-title { color: var(--text); }
+.lab-body .nav-lab { color: var(--text-dim); }
+.lab-body .nav-lab:hover { color: var(--text); }
+
+/* ===== Hero ===== */
+.lab-hero {
+  position: relative; z-index: 2;
+  padding: var(--spacing-3xl) 0 var(--spacing-xl);
+  text-align: center;
+}
+
+.lab-hero-label {
+  font-size: 10px; letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: var(--spacing-md);
+}
+
+.lab-hero-title {
+  font-size: 40px; font-weight: var(--weight-light, 300);
+  letter-spacing: 8px;
+  color: var(--text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.lab-hero-sub {
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  letter-spacing: 4px;
+}
+
+/* Stats row */
+.lab-stats {
+  display: flex; justify-content: center; gap: var(--spacing-2xl);
+  margin-top: var(--spacing-xl);
+}
+.lab-stat { text-align: center; }
+.lab-stat-num {
+  font-size: 28px; font-weight: var(--weight-light, 300);
+  color: var(--text); letter-spacing: 2px;
+}
+.lab-stat-label {
+  font-size: 9px; color: var(--text-faint);
+  letter-spacing: 3px; text-transform: uppercase; margin-top: 4px;
+}
+
+/* ===== Central Month Nodes ===== */
+.archive-section {
+  position: relative; z-index: 2;
+  padding: var(--spacing-xl) 0 var(--spacing-3xl);
+}
+
+.month-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+.month-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  cursor: pointer;
+  transition: opacity 0.6s ease;
+}
+
+/* Dot on the pillar */
+.month-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(200, 220, 255, 0.25);
+  box-shadow: 0 0 6px rgba(200, 220, 255, 0.08);
+  transition: all 0.8s ease;
+  flex-shrink: 0;
+}
+
+.month-node:hover .month-dot,
+.month-node.active .month-dot {
+  background: rgba(220, 235, 255, 0.70);
+  box-shadow: 0 0 14px rgba(200, 220, 255, 0.25), 0 0 40px rgba(200, 220, 255, 0.06);
+}
+
+/* Month label */
+.month-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular, 400);
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  font-family: 'SF Mono', monospace;
+  transition: color 0.8s ease;
+  min-width: 90px;
+}
+
+.month-node:hover .month-label,
+.month-node.active .month-label {
+  color: var(--text);
+}
+
+/* Accessing text */
+.month-accessing {
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 2px;
+  font-family: 'SF Mono', monospace;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.month-node:hover .month-accessing {
+  opacity: 1;
+}
+
+/* Count badge */
+.month-count {
+  font-size: 9px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  font-family: 'SF Mono', monospace;
+  margin-left: var(--spacing-sm);
+}
+
+/* ===== Cards Zone ===== */
+.cards-zone {
+  position: relative; z-index: 2;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg) var(--spacing-3xl);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  min-height: 120px;
+}
+
+/* ===== Anime Card ===== */
+.archive-card {
+  width: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.6s ease,
+              border-color 0.6s ease;
+}
+
+.archive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.archive-card-cover {
+  width: 100%;
+  aspect-ratio: 3/4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.archive-card-cover-bg {
+  position: absolute; inset: 0;
+}
+
+.archive-card-cover-text {
+  position: relative; z-index: 1;
+  font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  padding: 16px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+.archive-card-info {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+.archive-card-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.archive-card-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'SF Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.archive-card-type {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Empty prompt */
+.cards-placeholder {
+  width: 100%;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+  letter-spacing: 3px;
+  padding: var(--spacing-2xl);
+  font-family: 'SF Mono', monospace;
+}
+
+/* Back link */
+.lab-back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-faint); font-size: var(--text-xs);
+  font-family: 'SF Mono', monospace; letter-spacing: 2px;
+  transition: color 0.6s; text-decoration: none;
+}
+.lab-back-link:hover { color: var(--text-dim); }
+
+/* Footer */
+.lab-body .footer {
+  border-top: 1px solid rgba(255,255,255,0.03);
+  color: var(--text-faint); position: relative; z-index: 2;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 700px) {
+  .lab-hero-title { font-size: 26px; letter-spacing: 5px; }
+  .lab-stats { gap: var(--spacing-xl); }
+  .lab-stat-num { font-size: 22px; }
+  .archive-card { width: 150px; }
+  .month-label { font-size: 12px; letter-spacing: 2px; min-width: 70px; }
+}
+
+@media (max-width: 450px) {
+  .lab-hero-title { font-size: 20px; letter-spacing: 3px; }
+  .archive-card { width: 135px; }
+  .month-node { gap: var(--spacing-sm); }
+  .month-list { gap: 36px; }
+}

@@ -3,35 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>神秘实验室 — Y的acg导航站</title>
+  <title>Anime Archive · 神秘实验室 — Y的acg导航站</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="css/style.css?v=5">
-  <style>
-    .lab-page {
-      min-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: var(--spacing-3xl) var(--spacing-lg);
-    }
-    .lab-icon { font-size: 64px; margin-bottom: var(--spacing-lg); }
-    .lab-title { font-size: var(--text-4xl); font-weight: var(--weight-heavy); color: var(--text-primary); letter-spacing: -0.5px; margin-bottom: var(--spacing-sm); }
-    .lab-sub { font-size: var(--text-lg); color: var(--text-secondary); margin-bottom: var(--spacing-xl); }
-    .lab-back {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: var(--text-md); font-weight: var(--weight-medium);
-      color: var(--accent); padding: 10px 24px;
-      border-radius: var(--radius-full);
-      border: 0.5px solid var(--accent);
-      transition: all 0.2s var(--spring-interactive);
-      cursor: pointer; text-decoration: none;
-    }
-    .lab-back:hover { background: var(--accent); color: var(--text-inverse); }
-  </style>
+  <link rel="stylesheet" href="css/lab.css?v=4">
 </head>
-<body>
+<body class="lab-body">
+
+  <!-- Startup Ritual Overlay -->
+  <div class="startup-overlay" id="startupOverlay">
+    <div class="startup-dot" id="startupDot" style="opacity:0;transform:scale(0.3)"></div>
+  </div>
+
+  <!-- Central Pillar -->
+  <div class="pillar-bg"></div>
+  <div class="pillar-particles" id="pillarParticles"></div>
+
+  <!-- Nav Bar -->
   <nav class="nav-bar scrolled" id="navBar">
     <div class="container">
       <div class="nav-bar-inner">
@@ -41,18 +29,53 @@
     </div>
   </nav>
 
-  <main class="lab-page">
-    <div class="lab-icon">🧪</div>
-    <h1 class="lab-title">神秘实验室</h1>
-    <p class="lab-sub">新项目孵化中，敬请期待…</p>
-    <a href="index.html" class="lab-back">← 返回导航站</a>
-  </main>
+  <!-- Hero -->
+  <header class="lab-hero">
+    <p class="lab-hero-label">Archive Terminal v1.0</p>
+    <h1 class="lab-hero-title">ANIME ARCHIVE</h1>
+    <p class="lab-hero-sub">动漫档案数据库</p>
+    <div class="lab-stats">
+      <div class="lab-stat">
+        <div class="lab-stat-num" id="statTotal">--</div>
+        <div class="lab-stat-label">Records</div>
+      </div>
+      <div class="lab-stat">
+        <div class="lab-stat-num" id="statMonths">--</div>
+        <div class="lab-stat-label">Archives</div>
+      </div>
+      <div class="lab-stat">
+        <div class="lab-stat-num" id="statFuture">--</div>
+        <div class="lab-stat-label">Pending</div>
+      </div>
+    </div>
+  </header>
 
+  <!-- Month Nodes along pillar -->
+  <section class="archive-section">
+    <div class="month-list" id="monthList"></div>
+  </section>
+
+  <!-- Cards zone -->
+  <div class="cards-zone" id="cardsZone">
+    <div class="cards-placeholder">SELECT ARCHIVE</div>
+  </div>
+
+  <!-- Back -->
+  <div style="text-align:center;position:relative;z-index:2;padding-bottom:var(--spacing-lg)">
+    <a href="index.html" class="lab-back-link">← 返回导航站</a>
+  </div>
+
+  <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p class="footer-text">© 2025 Y的acg导航站 · 神秘实验室</p>
-      <p class="footer-sub"><span>为 ACG 爱好者而生</span></p>
+      <p class="footer-text">© 2025 Y的acg导航站 · Anime Archive Terminal</p>
+      <p class="footer-sub"><span>Archive data for reference only</span></p>
     </div>
   </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="data/anime-timeline.js?v=1"></script>
+  <script src="js/lab.js?v=4"></script>
 </body>
 </html>
