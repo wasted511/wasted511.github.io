@@ -1,39 +1,71 @@
 /* ==========================================
    Anime Archive Terminal
-   启动仪式 → 光柱 → 档案浮现
+   启动仪式 · 计数器 · 搜索 · 档案调取
    ========================================== */
 
-// ===== Pillar particles =====
-function createPillarParticles() {
-  const container = document.getElementById('pillarParticles');
-  if (!container) return;
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < 20; i++) {
+// ===== Pillar Particles =====
+(function() {
+  const c = document.getElementById('pillarParticles');
+  if (!c) return;
+  for (let i = 0; i < 16; i++) {
     const p = document.createElement('div');
     p.className = 'pillar-particle';
-    p.style.setProperty('--dur', (2.5 + Math.random() * 4) + 's');
-    p.style.setProperty('--delay', (Math.random() * 5) + 's');
-    p.style.height = (4 + Math.random() * 8) + 'px';
-    frag.appendChild(p);
+    p.style.setProperty('--dur', (3 + Math.random() * 5) + 's');
+    p.style.setProperty('--delay', Math.random() * 6 + 's');
+    p.style.height = (4 + Math.random() * 10) + 'px';
+    c.appendChild(p);
   }
-  container.appendChild(frag);
+})();
+
+// ===== Card cover palettes =====
+const PALETTE = [
+  ['#0E1028','#1A1040'], ['#0E1018','#1A0E28'], ['#0A1018','#101828'],
+  ['#100E1A','#1A0E28'], ['#0A140C','#102018'], ['#181810','#241C10'],
+  ['#0A101C','#101828'], ['#180E18','#240E20'], ['#0A1014','#101C24'],
+  ['#180A0A','#240E10'],
+];
+
+const POSTER_SEEDS = [
+  'frieren','apothecary','oshinoko','sakamoto','zenshu','jigokuraku',
+  'kaiju8','demonslayer','windbreaker','fireforce','spyfamily','kuroshitsuji',
+  'violet','jujutsu','mushoku','dressup','bocchi','rezero','chainsaw',
+  'abyss','neverland','diamond','aot','kiki','madoka','fate','opm',
+  'mha','tengoku','mahoyo','onepiece','bleach','eva','edgerunners',
+  'fumetsu','berserk','steins','hxh',
+];
+
+function coverHTML(anime, i) {
+  const [c1, c2] = PALETTE[i % PALETTE.length];
+  if (anime.cover) {
+    return `
+      <div class="archive-card-cover">
+        <img class="cover-poster-img" src="${anime.cover}" alt="${anime.title}" loading="lazy"
+             onerror="this.style.display='none'">
+        <div class="cover-gradient" style="background:linear-gradient(160deg,${c1} 0%,${c2} 100%)"></div>
+      </div>`;
+  }
+  // No cover yet — "SOON" placeholder
+  return `
+    <div class="archive-card-cover">
+      <div class="cover-gradient" style="background:linear-gradient(160deg,${c1} 0%,${c2} 100%)"></div>
+      <div class="cover-text" style="font-size:18px;letter-spacing:6px;color:rgba(255,255,255,0.25)">SOON</div>
+    </div>`;
 }
 
-// ===== Render month nodes along pillar =====
-const cardsZone = document.getElementById('cardsZone');
-let activeNodeEl = null;
-
-function getAnimeByMonth(key) {
-  return TIMELINE_DATA.filter(a => a.date === key);
+function statusClass(s) {
+  if (!s) return '';
+  if (s === '完结' || s === '上映中') return 'done';
+  if (s === '放送中') return 'airing';
+  return 'upcoming';
 }
 
+// ===== Render month nodes =====
 function renderMonthNodes() {
   const list = document.getElementById('monthList');
   if (!list) return;
   list.innerHTML = '';
-
   TIMELINE_NODES.forEach(node => {
-    const count = getAnimeByMonth(node.time).length;
+    const count = TIMELINE_DATA.filter(a => a.date === node.time).length;
     const el = document.createElement('div');
     el.className = 'month-node';
     el.dataset.time = node.time;
@@ -47,91 +79,143 @@ function renderMonthNodes() {
   });
 }
 
-function renderStats() {
-  const total = TIMELINE_DATA.length;
-  const months = new Set(TIMELINE_DATA.map(a => a.date)).size;
-  const future = TIMELINE_DATA.filter(a => a.date >= '2027').length;
-  ['statTotal','statMonths','statFuture'].forEach((id, i) => {
+// ===== Counter animation =====
+function animateCounters() {
+  const targets = [
+    { id: 'statTotal', end: TIMELINE_DATA.length },
+    { id: 'statMonths', end: new Set(TIMELINE_DATA.map(a => a.date)).size },
+    { id: 'statFuture', end: TIMELINE_DATA.filter(a => a.date >= '2027').length },
+  ];
+  targets.forEach(({ id, end }) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = [total, months, future][i];
+    if (!el) return;
+    const start = { val: 0 };
+    const duration = 900;
+    const startTime = performance.now();
+    function tick() {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      el.textContent = Math.round(start.val + (end - start.val) * eased);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   });
 }
 
-// ===== Card cover gradient =====
-const PALETTE = [
-  ['#101020','#1A1A30'], ['#101018','#1A1028'], ['#0E1418','#142028'],
-  ['#14101A','#201028'], ['#0E1810','#142018'], ['#181810','#282010'],
-  ['#101820','#162030'], ['#1A1018','#281820'], ['#101418','#182228'],
-  ['#181010','#281A1A'],
-];
+// ===== Search =====
+let searchQuery = '';
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value.toLowerCase().trim();
+    const monthNodes = document.querySelectorAll('.month-node');
+    if (searchQuery) {
+      // Show all matching records
+      const results = TIMELINE_DATA.filter(a =>
+        a.title.toLowerCase().includes(searchQuery) ||
+        a.tags.some(t => t.toLowerCase().includes(searchQuery)) ||
+        a.type.toLowerCase().includes(searchQuery) ||
+        a.status.includes(searchQuery) ||
+        a.date.includes(searchQuery)
+      );
+      monthNodes.forEach(n => n.classList.remove('active'));
+      showCards(results, null);
+    } else {
+      // Reset to default
+      showDefault();
+    }
+  });
+}
 
-function renderCards(animes) {
+// ===== Cards zone =====
+const cardsZone = document.getElementById('cardsZone');
+let activeNodeEl = null;
+
+function showCards(animes, nodeEl) {
   cardsZone.innerHTML = '';
   if (!animes.length) {
-    cardsZone.innerHTML = '<div class="cards-placeholder">NO RECORDS</div>';
+    cardsZone.innerHTML = '<div class="cards-placeholder">NO RESULTS</div>';
     return;
+  }
+  if (nodeEl) {
+    nodeEl.classList.add('active');
+    activeNodeEl = nodeEl;
   }
 
   animes.forEach((anime, i) => {
-    const [c1, c2] = PALETTE[i % PALETTE.length];
     const card = document.createElement('div');
     card.className = 'archive-card';
+    const sClass = statusClass(anime.status);
     card.innerHTML = `
-      <div class="archive-card-cover">
-        <div class="archive-card-cover-bg" style="background:linear-gradient(155deg,${c1} 0%,${c2} 100%)"></div>
-        <div class="archive-card-cover-text">${anime.title}</div>
-      </div>
+      ${coverHTML(anime, i)}
       <div class="archive-card-info">
         <div class="archive-card-title">${anime.title}</div>
-        <div class="archive-card-meta">${anime.date}</div>
-        <span class="archive-card-type">${anime.type}</span>
+        <div class="archive-card-row">
+          <span class="archive-card-type">${anime.type}</span>
+          <span class="archive-card-status ${sClass}">${anime.status || ''}</span>
+          <span class="archive-card-score">${anime.score ? anime.score.toFixed(1) : ''}</span>
+        </div>
+        <div class="archive-card-tags">
+          ${anime.tags.slice(0, 3).map(t => `<span class="archive-card-tag">${t}</span>`).join('')}
+        </div>
       </div>
     `;
     cardsZone.appendChild(card);
   });
 
-  // GSAP: cards emerge slowly, one by one, with subtle lift
-  if (typeof gsap !== 'undefined') {
-    const cards = cardsZone.querySelectorAll('.archive-card');
-    gsap.fromTo(cards,
-      { opacity: 0, y: 16, scale: 0.98 },
-      {
-        opacity: 1, y: 0, scale: 1,
-        duration: 0.8,
-        stagger: 0.10,
-        ease: 'power2.out',
-      }
-    );
-  }
-}
-
-// ===== Click handler =====
-function bindMonthNodes() {
-  document.querySelectorAll('.month-node').forEach(node => {
-    node.addEventListener('click', () => {
-      document.querySelectorAll('.month-node').forEach(n => n.classList.remove('active'));
-      node.classList.add('active');
-      activeNodeEl = node;
-
-      // Brief pause, then show records
-      const animes = getAnimeByMonth(node.dataset.time);
-      cardsZone.innerHTML = '<div class="cards-placeholder">RETRIEVING…</div>';
-
-      setTimeout(() => {
-        renderCards(animes);
-      }, 300);
+  // Animate cards with staggered CSS transition
+  const cards = cardsZone.querySelectorAll('.archive-card');
+  cards.forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(14px) scale(0.985)';
+    card.style.transition = 'opacity 0.7s ease, transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+    card.style.transitionDelay = (i * 0.08) + 's';
+    requestAnimationFrame(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0) scale(1)';
     });
   });
 }
 
-// ===== Default: show first node with data =====
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.getElementById('statusToast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+// ===== Click handler with ACCESSING ritual =====
+function bindMonthNodes() {
+  document.querySelectorAll('.month-node').forEach(node => {
+    node.addEventListener('click', () => {
+      document.querySelectorAll('.month-node').forEach(n => n.classList.remove('active'));
+      activeNodeEl = null;
+      const animes = TIMELINE_DATA.filter(a => a.date === node.dataset.time);
+      cardsZone.innerHTML = '<div class="cards-placeholder">ACCESSING ARCHIVE…</div>';
+      showToast('ACCESSING ARCHIVE…');
+
+      setTimeout(() => {
+        showToast('ARCHIVE OPENED');
+        showCards(animes, node);
+      }, 400);
+    });
+  });
+}
+
+// ===== Default =====
 function showDefault() {
+  document.querySelectorAll('.month-node').forEach(n => n.classList.remove('active'));
   const nodes = document.querySelectorAll('.month-node');
   for (const n of nodes) {
-    if (getAnimeByMonth(n.dataset.time).length > 0) {
-      n.classList.add('active');
-      activeNodeEl = n;
-      renderCards(getAnimeByMonth(n.dataset.time));
+    const animes = TIMELINE_DATA.filter(a => a.date === n.dataset.time);
+    if (animes.length > 0) {
+      showCards(animes, n);
+      if (!searchQuery) {
+        setTimeout(() => n.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }), 300);
+      }
       return;
     }
   }
@@ -143,60 +227,69 @@ async function startupRitual() {
   const dot = document.getElementById('startupDot');
   if (!overlay || !dot) return initDisplay();
 
-  // Phase 1: Dot appears
   await sleep(400);
   dot.style.transition = 'transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.2s ease';
-  dot.style.opacity = '1';
-  dot.style.transform = 'scale(1)';
+  dot.style.opacity = '1'; dot.style.transform = 'scale(1)';
   await sleep(1000);
 
-  // Phase 2: Dot stretches into pillar
-  dot.style.transition = 'width 1.5s cubic-bezier(0.22, 1, 0.36, 1), height 1.5s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.8s ease';
-  dot.style.width = '1px';
-  dot.style.height = '80vh';
-  dot.style.borderRadius = '1px';
+  dot.style.transition = 'width 1.5s cubic-bezier(0.22, 1, 0.36, 1), height 1.5s cubic-bezier(0.22, 1, 0.36, 1)';
+  dot.style.width = '1px'; dot.style.height = '80vh';
   await sleep(1800);
 
-  // Phase 3: Fade overlay
   overlay.classList.add('done');
-
-  // Phase 4: Reveal page content
   await sleep(600);
 
-  if (typeof gsap !== 'undefined') {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.9 } });
-    tl.from('.lab-hero-label', { opacity: 0, y: 12 }, 0)
-      .from('.lab-hero-title', { opacity: 0, y: 16 }, 0.15)
-      .from('.lab-hero-sub', { opacity: 0, y: 8 }, 0.3)
-      .from('.lab-stat', { opacity: 0, y: 8, stagger: 0.08 }, 0.45)
-      .from('.pillar-bg', { opacity: 0, duration: 1.2 }, 0.5)
-      .from('.month-node', { opacity: 0, y: 6, stagger: 0.10, duration: 0.7 }, 0.9);
-  }
+  animateCounters();
 
-  // Show default records after a beat
-  setTimeout(() => {
-    showDefault();
-  }, 200);
+  // CSS-based entrance — staggered reveals
+  const fadeIn = (sel, delay, y) => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(' + (y || 10) + 'px)';
+    el.style.transition = 'opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+    el.style.transitionDelay = delay + 's';
+    requestAnimationFrame(() => {
+      setTimeout(() => { el.style.opacity = '1'; el.style.transform = ''; }, 40);
+    });
+  };
+
+  fadeIn('.lab-hero-label', 0, 10);
+  fadeIn('.lab-hero-title', 0.12, 14);
+  fadeIn('.lab-hero-sub', 0.25, 8);
+  document.querySelectorAll('.lab-stat').forEach((el, i) => {
+    el.style.opacity = '0'; el.style.transform = 'translateY(8px)';
+    el.style.transition = 'opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+    el.style.transitionDelay = (0.35 + i * 0.06) + 's';
+    requestAnimationFrame(() => setTimeout(() => { el.style.opacity = '1'; el.style.transform = ''; }, 40));
+  });
+  fadeIn('.scroll-prompt', 0.5, 4);
+  fadeIn('.search-section', 0.55, 6);
+  fadeIn('.pillar-bg', 0.4, 0);
+  document.querySelectorAll('.month-node').forEach((el, i) => {
+    el.style.opacity = '0'; el.style.transform = 'translateY(5px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1)';
+    el.style.transitionDelay = (0.7 + i * 0.08) + 's';
+    requestAnimationFrame(() => setTimeout(() => { el.style.opacity = '1'; el.style.transform = ''; }, 40));
+  });
+
+  setTimeout(() => showDefault(), 2200);
 }
 
 function initDisplay() {
-  // Fallback: just show everything
   document.getElementById('startupOverlay').style.display = 'none';
+  const el = document.getElementById('statTotal'); if (el) el.textContent = TIMELINE_DATA.length;
+  const em = document.getElementById('statMonths'); if (em) em.textContent = new Set(TIMELINE_DATA.map(a => a.date)).size;
+  const ef = document.getElementById('statFuture'); if (ef) ef.textContent = TIMELINE_DATA.filter(a => a.date >= '2027').length;
   showDefault();
 }
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ===== Init =====
 function init() {
-  createPillarParticles();
   renderMonthNodes();
-  renderStats();
   bindMonthNodes();
-
-  // Don't show cards yet — startup handles it
   startupRitual();
 }
 
